@@ -2,38 +2,51 @@ import React, { ReactNode, useState } from 'react';
 import wizard from '../img/wizard.png';
 
 interface SquareProps {
-  x: number;
-  y: number;
   lastInRow: boolean;
   lastInCol: boolean;
   callback: (x: number, y: number) => void;
 }
 
-interface StringCoords {
+interface TopLeftPosition {
   top: string;
   left: string;
 }
 
-interface GridCoords {
+interface Size {
+  width: string;
+  height: string;
+}
+
+interface GridCoordProps {
   x: number;
   y: number;
 }
 
 interface TokenProps {
-  x: number;
-  y: number;
   squareSize: number;
 }
 
-function Token({x, y, squareSize }: TokenProps) {
-  const positionStyle: StringCoords = { top: `${y * squareSize}px`, left: `${x * squareSize}px` };
+interface GridTokenProps {
+  squareSize: number;
+}
+
+function Token({ squareSize }: TokenProps) {
+  return (
+    <img src={ wizard } width={ `${squareSize}`} height={ `${squareSize}` } ></img>
+  )
+}
+
+function GridToken({x, y, squareSize }: GridTokenProps & GridCoordProps) {
+  const positionStyle: TopLeftPosition & Size = { top: `${y * squareSize}px`, left: `${x * squareSize}px`, width: `${squareSize}px`, height: `${squareSize}px` };
 
   return (
-    <img src={ wizard } className='absolute' style={ positionStyle } width={ `${squareSize}`} height={ `${squareSize}` } ></img>
+    <div className='absolute' style={ positionStyle }>
+      <img src={ wizard } className='absolute'></img>
+    </div>
   );
 }
 
-function Square({ x, y, lastInCol, lastInRow, callback }: SquareProps) {
+function Square({ x, y, lastInCol, lastInRow, callback }: SquareProps & GridCoordProps) {
   function sayCoords() {
     console.log('My coords are x: ' + x + ' y: ' + y);
   }
@@ -52,9 +65,18 @@ function Square({ x, y, lastInCol, lastInRow, callback }: SquareProps) {
   );
 }
 
+function Sidebar() {
+  return (
+    <ul className='fixed min-w-80 border-2 border-solid border-red-600 bg-amber-200'>
+      <Token squareSize={64}></Token>
+      <Token squareSize={64}></Token>
+    </ul>
+  );
+}
+
 export default function App() {
   let [squareSize, setSquareSize] = useState<number>(64);
-  let [tokenCoords, setTokenCoords] = useState<GridCoords>({ x: 0, y: 0 });
+  let [tokenCoords, setTokenCoords] = useState<GridCoordProps>({ x: 0, y: 0 });
 
   function onSquareClick(newX: number, newY: number) {
     setTokenCoords({ x: newX, y: newY });
@@ -77,7 +99,8 @@ export default function App() {
 
     <div className={ className }>
       { squares }
-      <Token x={ tokenCoords.x } y={ tokenCoords.y } squareSize={ squareSize }></Token>
+      <Sidebar></Sidebar>
+      <GridToken x={ tokenCoords.x } y={ tokenCoords.y } squareSize={ squareSize }></GridToken>
     </div>
   );
 }
